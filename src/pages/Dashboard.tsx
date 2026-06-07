@@ -4,7 +4,34 @@ import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
 import type { FamilyTable } from '../types'
 
+interface TableCounts {
+  food: number
+  drinks: number
+  misc: number
+  experiences: number
+}
+
+async function fetchTableCounts(tableId: number): Promise<TableCounts> {
+  const [dishes, drinks, misc, experiences] = await Promise.all([
+    supabase.from('dishes').select('id', { count: 'exact', head: true }).eq('table_id', tableId),
+    supabase.from('drinks').select('id', { count: 'exact', head: true }).eq('table_id', tableId),
+    supabase.from('misc_items').select('id', { count: 'exact', head: true }).eq('table_id', tableId),
+    supabase.from('experiences').select('id', { count: 'exact', head: true }).eq('table_id', tableId),
+  ])
+  return {
+    food: dishes.count ?? 0,
+    drinks: drinks.count ?? 0,
+    misc: misc.count ?? 0,
+    experiences: experiences.count ?? 0,
+  }
+}
+
 function TableCard({ table }: { table: FamilyTable }) {
+  const { data: counts } = useQuery({
+    queryKey: ['table_counts', table.id],
+    queryFn: () => fetchTableCounts(table.id),
+  })
+
   return (
     <Link to={`/tables/${table.id}`} className="card hover:shadow-md transition-shadow group block">
       <div className="h-32 bg-gradient-to-br from-forest/10 to-amber/10 flex items-center justify-center rounded-t-2xl overflow-hidden">
@@ -21,6 +48,17 @@ function TableCard({ table }: { table: FamilyTable }) {
         {table.description && (
           <p className="text-stone-500 text-sm mt-1 line-clamp-2">{table.description}</p>
         )}
+        {counts && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {counts.food > 0 && <span className="text-xs bg-amber/10 text-amber-dark px-2 py-0.5 rounded-full">🍽️ {counts.food} food</span>}
+            {counts.drinks > 0 && <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">🥂 {counts.drinks} drinks</span>}
+            {counts.misc > 0 && <span className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">🛒 {counts.misc} misc</span>}
+            {counts.experiences > 0 && <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">🗺️ {counts.experiences} exp</span>}
+            {counts.food + counts.drinks + counts.misc + counts.experiences === 0 && (
+              <span className="text-xs text-stone-400">No items yet</span>
+            )}
+          </div>
+        )}
         <p className="text-stone-400 text-xs mt-3">
           Created {new Date(table.created_at).toLocaleDateString()}
         </p>
@@ -35,10 +73,7 @@ export default function Dashboard() {
   const { data: tables, isLoading, error } = useQuery({
     queryKey: ['tables', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tables')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const { data, error } = await supabase.from('tables').select('*').order('created_at', { ascending: false })
       if (error) throw error
       return data as FamilyTable[]
     },

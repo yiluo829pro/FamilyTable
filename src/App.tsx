@@ -11,6 +11,15 @@ import TableDetail from './pages/tables/TableDetail'
 import NewTable from './pages/tables/NewTable'
 import NewDish from './pages/dishes/NewDish'
 import EditDish from './pages/dishes/EditDish'
+import NewDrink from './pages/drinks/NewDrink'
+import EditDrink from './pages/drinks/EditDrink'
+import NewMisc from './pages/misc/NewMisc'
+import EditMisc from './pages/misc/EditMisc'
+import NewExperience from './pages/experiences/NewExperience'
+import EditExperience from './pages/experiences/EditExperience'
+import NewCollection from './pages/collections/NewCollection'
+import CollectionDetail from './pages/collections/CollectionDetail'
+import CollectionPublic from './pages/collections/CollectionPublic'
 import NewEvent from './pages/events/NewEvent'
 import EventAdmin from './pages/events/EventAdmin'
 import EventBroadcast from './pages/events/EventBroadcast'
@@ -50,6 +59,9 @@ export default function App() {
           <Route path="/invite/:token" element={<InvitePage />} />
         </Route>
 
+        {/* Public collection route (no auth required) */}
+        <Route path="/collection/:slug" element={<CollectionPublic />} />
+
         {/* Auth pages */}
         <Route path="/login" element={<Login />} />
 
@@ -60,6 +72,14 @@ export default function App() {
           <Route path="/tables/:id" element={<TableDetail />} />
           <Route path="/tables/:id/dishes/new" element={<NewDish />} />
           <Route path="/tables/:id/dishes/:dishId/edit" element={<EditDish />} />
+          <Route path="/tables/:id/drinks/new" element={<NewDrink />} />
+          <Route path="/tables/:id/drinks/:drinkId/edit" element={<EditDrink />} />
+          <Route path="/tables/:id/misc/new" element={<NewMisc />} />
+          <Route path="/tables/:id/misc/:miscId/edit" element={<EditMisc />} />
+          <Route path="/tables/:id/experiences/new" element={<NewExperience />} />
+          <Route path="/tables/:id/experiences/:expId/edit" element={<EditExperience />} />
+          <Route path="/tables/:id/collections/new" element={<NewCollection />} />
+          <Route path="/tables/:id/collections/:collectionId" element={<CollectionDetail />} />
           <Route path="/events/new" element={<NewEvent />} />
           <Route path="/events/:id" element={<EventAdmin />} />
           <Route path="/events/:id/broadcast" element={<EventBroadcast />} />
