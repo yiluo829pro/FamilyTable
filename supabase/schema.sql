@@ -366,6 +366,487 @@ CREATE POLICY "fund_select" ON public.food_fund_bids
   FOR SELECT USING (true);
 
 -- ============================================================
+-- DRINKS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.drinks (
+  id                  BIGSERIAL PRIMARY KEY,
+  table_id            BIGINT NOT NULL REFERENCES public.tables(id) ON DELETE CASCADE,
+  name                TEXT NOT NULL,
+  brand               TEXT,
+  sub_type            TEXT NOT NULL CHECK (sub_type IN ('coffee', 'wine', 'beer', 'spirits', 'sake', 'tea', 'non_alcoholic')),
+  photo_url           TEXT,
+  tasting_notes       TEXT[] NOT NULL DEFAULT '{}',
+  rating              NUMERIC(3,1) CHECK (rating >= 1 AND rating <= 5),
+  status              TEXT NOT NULL DEFAULT 'wishlist' CHECK (status IN ('tried_loved', 'tried', 'wishlist')),
+  personal_notes      TEXT,
+  -- coffee fields
+  roast_level         TEXT,
+  process             TEXT,
+  origin_country      TEXT,
+  brew_method         TEXT,
+  blend_name          TEXT,
+  -- wine fields
+  wine_type           TEXT,
+  varietal            TEXT,
+  producer            TEXT,
+  vintage_year        INT,
+  wine_region         TEXT,
+  abv                 NUMERIC(5,2),
+  price_range         TEXT,
+  occasion            TEXT,
+  -- beer fields
+  brewery             TEXT,
+  beer_style          TEXT,
+  beer_abv            NUMERIC(5,2),
+  ibu                 INT,
+  beer_format         TEXT,
+  -- spirits fields
+  spirit_type         TEXT,
+  distillery          TEXT,
+  age_statement       INT,
+  spirit_abv          NUMERIC(5,2),
+  cocktail_notes      TEXT,
+  -- sake/asian fields
+  sake_type           TEXT,
+  sake_brewery        TEXT,
+  sake_region         TEXT,
+  smv                 NUMERIC(5,2),
+  serving_temp        TEXT,
+  -- tea fields
+  tea_type            TEXT,
+  tea_brand           TEXT,
+  tea_origin          TEXT,
+  brew_temp           TEXT,
+  steep_time          TEXT,
+  -- non-alcoholic fields
+  na_sub_type         TEXT,
+  na_brand            TEXT,
+  flavor_variant      TEXT,
+  added_by            UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.drinks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "drinks_select" ON public.drinks
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = drinks.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = drinks.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "drinks_insert" ON public.drinks
+  FOR INSERT WITH CHECK (
+    auth.uid() = added_by AND (
+      EXISTS (
+        SELECT 1 FROM public.table_members
+        WHERE table_id = drinks.table_id AND user_id = auth.uid()
+      ) OR
+      EXISTS (
+        SELECT 1 FROM public.tables
+        WHERE id = drinks.table_id AND created_by = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "drinks_update" ON public.drinks
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = drinks.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = drinks.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "drinks_delete" ON public.drinks
+  FOR DELETE USING (
+    auth.uid() = added_by OR
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = drinks.table_id AND user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- ============================================================
+-- MISC ITEMS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.misc_items (
+  id                  BIGSERIAL PRIMARY KEY,
+  table_id            BIGINT NOT NULL REFERENCES public.tables(id) ON DELETE CASCADE,
+  name                TEXT NOT NULL,
+  brand               TEXT,
+  sub_category        TEXT NOT NULL CHECK (sub_category IN ('snacks', 'condiments', 'instant_noodles', 'baked_goods')),
+  photo_url           TEXT,
+  flavor_variant      TEXT,
+  rating              NUMERIC(3,1) CHECK (rating >= 1 AND rating <= 5),
+  status              TEXT NOT NULL DEFAULT 'wishlist' CHECK (status IN ('tried_loved', 'tried', 'wishlist')),
+  personal_notes      TEXT,
+  where_to_buy        TEXT,
+  -- snacks
+  snack_type          TEXT,
+  heat_level          TEXT,
+  tasting_notes       TEXT[] NOT NULL DEFAULT '{}',
+  -- condiments
+  condiment_type      TEXT,
+  intensity           TEXT,
+  -- instant noodles
+  noodle_type         TEXT,
+  broth_type          TEXT,
+  spice_level         INT,
+  customization_notes TEXT,
+  -- baked goods
+  baked_source        TEXT,
+  baked_type          TEXT,
+  bakery_brand        TEXT,
+  added_by            UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.misc_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "misc_items_select" ON public.misc_items
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = misc_items.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = misc_items.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "misc_items_insert" ON public.misc_items
+  FOR INSERT WITH CHECK (
+    auth.uid() = added_by AND (
+      EXISTS (
+        SELECT 1 FROM public.table_members
+        WHERE table_id = misc_items.table_id AND user_id = auth.uid()
+      ) OR
+      EXISTS (
+        SELECT 1 FROM public.tables
+        WHERE id = misc_items.table_id AND created_by = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "misc_items_update" ON public.misc_items
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = misc_items.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = misc_items.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "misc_items_delete" ON public.misc_items
+  FOR DELETE USING (
+    auth.uid() = added_by OR
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = misc_items.table_id AND user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- ============================================================
+-- EXPERIENCES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.experiences (
+  id                  BIGSERIAL PRIMARY KEY,
+  table_id            BIGINT NOT NULL REFERENCES public.tables(id) ON DELETE CASCADE,
+  name                TEXT NOT NULL,
+  sub_category        TEXT NOT NULL CHECK (sub_category IN ('restaurant', 'cafe', 'travel', 'cookbook')),
+  photo_url           TEXT,
+  rating              NUMERIC(3,1) CHECK (rating >= 1 AND rating <= 5),
+  status              TEXT NOT NULL DEFAULT 'wishlist',
+  personal_notes      TEXT,
+  -- restaurant/cafe shared
+  cuisine             TEXT,
+  address             TEXT,
+  city                TEXT,
+  country             TEXT,
+  price_range         TEXT,
+  occasion            TEXT,
+  ambiance_tags       TEXT[] NOT NULL DEFAULT '{}',
+  dishes_tried        TEXT,
+  standout_dish       TEXT,
+  would_return        TEXT,
+  -- cafe extra
+  cafe_specialty      TEXT,
+  work_friendly       BOOLEAN,
+  wifi_available      BOOLEAN,
+  -- travel
+  trip_name           TEXT,
+  trip_city           TEXT,
+  trip_country        TEXT,
+  trip_start_date     DATE,
+  trip_end_date       DATE,
+  -- cookbook
+  author              TEXT,
+  cuisine_focus       TEXT,
+  year_published      INT,
+  publisher           TEXT,
+  favorite_recipes    TEXT,
+  visit_dates         TEXT[] NOT NULL DEFAULT '{}',
+  added_by            UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.experiences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "experiences_select" ON public.experiences
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = experiences.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = experiences.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "experiences_insert" ON public.experiences
+  FOR INSERT WITH CHECK (
+    auth.uid() = added_by AND (
+      EXISTS (
+        SELECT 1 FROM public.table_members
+        WHERE table_id = experiences.table_id AND user_id = auth.uid()
+      ) OR
+      EXISTS (
+        SELECT 1 FROM public.tables
+        WHERE id = experiences.table_id AND created_by = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "experiences_update" ON public.experiences
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = experiences.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = experiences.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "experiences_delete" ON public.experiences
+  FOR DELETE USING (
+    auth.uid() = added_by OR
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = experiences.table_id AND user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- ============================================================
+-- TRAVEL MOMENTS (child of experiences where sub_category=travel)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.travel_moments (
+  id              BIGSERIAL PRIMARY KEY,
+  experience_id   BIGINT NOT NULL REFERENCES public.experiences(id) ON DELETE CASCADE,
+  item_name       TEXT NOT NULL,
+  where_eaten     TEXT,
+  photo_url       TEXT,
+  memory_note     TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.travel_moments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "travel_moments_select" ON public.travel_moments
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.table_members tm ON tm.table_id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.tables t ON t.id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "travel_moments_insert" ON public.travel_moments
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.table_members tm ON tm.table_id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.tables t ON t.id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "travel_moments_update" ON public.travel_moments
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.table_members tm ON tm.table_id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.tables t ON t.id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "travel_moments_delete" ON public.travel_moments
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.table_members tm ON tm.table_id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.experiences exp
+      JOIN public.tables t ON t.id = exp.table_id
+      WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
+    )
+  );
+
+-- ============================================================
+-- COLLECTIONS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.collections (
+  id          BIGSERIAL PRIMARY KEY,
+  table_id    BIGINT NOT NULL REFERENCES public.tables(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  description TEXT,
+  slug        TEXT NOT NULL UNIQUE,
+  privacy     TEXT NOT NULL DEFAULT 'private' CHECK (privacy IN ('private', 'shared')),
+  created_by  UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.collections ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "collections_select_auth" ON public.collections
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = collections.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = collections.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "collections_select_public" ON public.collections
+  FOR SELECT USING (privacy = 'shared');
+
+CREATE POLICY "collections_insert" ON public.collections
+  FOR INSERT WITH CHECK (
+    auth.uid() = created_by AND (
+      EXISTS (
+        SELECT 1 FROM public.table_members
+        WHERE table_id = collections.table_id AND user_id = auth.uid()
+      ) OR
+      EXISTS (
+        SELECT 1 FROM public.tables
+        WHERE id = collections.table_id AND created_by = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "collections_update" ON public.collections
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.table_members
+      WHERE table_id = collections.table_id AND user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.tables
+      WHERE id = collections.table_id AND created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "collections_delete" ON public.collections
+  FOR DELETE USING (auth.uid() = created_by);
+
+-- ============================================================
+-- COLLECTION ITEMS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.collection_items (
+  id              BIGSERIAL PRIMARY KEY,
+  collection_id   BIGINT NOT NULL REFERENCES public.collections(id) ON DELETE CASCADE,
+  item_type       TEXT NOT NULL CHECK (item_type IN ('dish', 'drink', 'misc', 'experience')),
+  item_id         BIGINT NOT NULL,
+  sort_order      INT NOT NULL DEFAULT 0,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.collection_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "collection_items_select" ON public.collection_items
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      JOIN public.table_members tm ON tm.table_id = c.table_id
+      WHERE c.id = collection_items.collection_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      JOIN public.tables t ON t.id = c.table_id
+      WHERE c.id = collection_items.collection_id AND t.created_by = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      WHERE c.id = collection_items.collection_id AND c.privacy = 'shared'
+    )
+  );
+
+CREATE POLICY "collection_items_insert" ON public.collection_items
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      JOIN public.table_members tm ON tm.table_id = c.table_id
+      WHERE c.id = collection_items.collection_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      JOIN public.tables t ON t.id = c.table_id
+      WHERE c.id = collection_items.collection_id AND t.created_by = auth.uid()
+    )
+  );
+
+CREATE POLICY "collection_items_delete" ON public.collection_items
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      JOIN public.table_members tm ON tm.table_id = c.table_id
+      WHERE c.id = collection_items.collection_id AND tm.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM public.collections c
+      JOIN public.tables t ON t.id = c.table_id
+      WHERE c.id = collection_items.collection_id AND t.created_by = auth.uid()
+    )
+  );
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_dishes_table_id ON public.dishes(table_id);
@@ -375,3 +856,10 @@ CREATE INDEX IF NOT EXISTS idx_guest_votes_event_id ON public.guest_votes(event_
 CREATE INDEX IF NOT EXISTS idx_potluck_event_id ON public.potluck_items(event_id);
 CREATE INDEX IF NOT EXISTS idx_food_fund_event_id ON public.food_fund_bids(event_id);
 CREATE INDEX IF NOT EXISTS idx_preferences_event_id ON public.guest_preferences(event_id);
+CREATE INDEX IF NOT EXISTS idx_drinks_table_id ON public.drinks(table_id);
+CREATE INDEX IF NOT EXISTS idx_misc_items_table_id ON public.misc_items(table_id);
+CREATE INDEX IF NOT EXISTS idx_experiences_table_id ON public.experiences(table_id);
+CREATE INDEX IF NOT EXISTS idx_travel_moments_experience_id ON public.travel_moments(experience_id);
+CREATE INDEX IF NOT EXISTS idx_collections_table_id ON public.collections(table_id);
+CREATE INDEX IF NOT EXISTS idx_collections_slug ON public.collections(slug);
+CREATE INDEX IF NOT EXISTS idx_collection_items_collection_id ON public.collection_items(collection_id);
