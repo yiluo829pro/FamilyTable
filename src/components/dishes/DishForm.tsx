@@ -1,23 +1,24 @@
 import { useState, useRef } from 'react'
 import PhotoCropPicker from '../ui/PhotoCropPicker'
+import { CUISINE_ORIGIN_TAGS, CUISINE_INGREDIENT_TAGS } from '../../data/seeds'
 
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal', 'Kosher', 'Keto', 'Paleo']
-const CUISINE_OPTIONS = ['Italian', 'Chinese', 'Mexican', 'Indian', 'Japanese', 'Thai', 'American', 'French', 'Mediterranean', 'Korean', 'Vietnamese', 'Greek', 'Other']
-const STATUS_OPTIONS: Array<{ value: 'active' | 'memory_only' | 'archived'; label: string }> = [
-  { value: 'active', label: 'Active — can be added to shortlists' },
+const STATUS_OPTIONS: Array<{ value: 'active' | 'memory_only' | 'archived' | 'wishlist'; label: string }> = [
+  { value: 'wishlist', label: 'Wishlisted — want to cook someday' },
+  { value: 'active', label: 'Active — cooking this regularly' },
   { value: 'memory_only', label: 'Memory only — preserved but not for events' },
   { value: 'archived', label: 'Archived — hidden from most views' },
 ]
 
 export interface DishFormData {
   name: string
-  cuisine_tag: string
+  cuisine_tags: string[]
   dietary_tags: string[]
   cook_time: string
   story: string
   recipe_ingredients: string
   recipe_steps: string
-  status: 'active' | 'memory_only' | 'archived'
+  status: 'active' | 'memory_only' | 'archived' | 'wishlist'
   photoFiles: File[]
   coverIndex: number
   existingPhotos: string[]
@@ -33,7 +34,7 @@ interface Props {
 export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Dish' }: Props) {
   const [form, setForm] = useState<DishFormData>({
     name: initialData?.name ?? '',
-    cuisine_tag: initialData?.cuisine_tag ?? '',
+    cuisine_tags: initialData?.cuisine_tags ?? [],
     dietary_tags: initialData?.dietary_tags ?? [],
     cook_time: initialData?.cook_time ?? '',
     story: initialData?.story ?? '',
@@ -52,12 +53,12 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
   const [cropTargetIndex, setCropTargetIndex] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const toggleDietary = (tag: string) => {
+  const toggleTag = (field: 'cuisine_tags' | 'dietary_tags', tag: string) => {
     setForm(f => ({
       ...f,
-      dietary_tags: f.dietary_tags.includes(tag)
-        ? f.dietary_tags.filter(t => t !== tag)
-        : [...f.dietary_tags, tag],
+      [field]: f[field].includes(tag)
+        ? f[field].filter((t: string) => t !== tag)
+        : [...f[field], tag],
     }))
   }
 
@@ -253,44 +254,61 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
         )}
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div>
-          <label className="label">Cuisine</label>
-          <select
-            value={form.cuisine_tag}
-            onChange={e => setForm(f => ({ ...f, cuisine_tag: e.target.value }))}
-            className="input-field"
-          >
-            <option value="">Select cuisine…</option>
-            {CUISINE_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+      {/* Cuisine origin tags */}
+      <div>
+        <label className="label">Cuisine</label>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {CUISINE_ORIGIN_TAGS.map(tag => (
+            <button key={tag} type="button" onClick={() => toggleTag('cuisine_tags', tag)}
+              className={`text-sm px-3 py-1 rounded-full border transition-colors ${
+                form.cuisine_tags.includes(tag)
+                  ? 'bg-forest text-white border-forest'
+                  : 'border-stone-200 text-stone-600 hover:border-forest'
+              }`}>
+              {tag}
+            </button>
+          ))}
         </div>
-        <div>
-          <label className="label">Cook time</label>
-          <input
-            type="text"
-            value={form.cook_time}
-            onChange={e => setForm(f => ({ ...f, cook_time: e.target.value }))}
-            className="input-field"
-            placeholder="e.g. 45 minutes"
-          />
+      </div>
+
+      {/* Ingredient / type tags */}
+      <div>
+        <label className="label">Ingredient / Type</label>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {CUISINE_INGREDIENT_TAGS.map(tag => (
+            <button key={tag} type="button" onClick={() => toggleTag('cuisine_tags', tag)}
+              className={`text-sm px-3 py-1 rounded-full border transition-colors ${
+                form.cuisine_tags.includes(tag)
+                  ? 'bg-amber text-white border-amber'
+                  : 'border-stone-200 text-stone-600 hover:border-amber'
+              }`}>
+              {tag}
+            </button>
+          ))}
         </div>
+      </div>
+
+      <div>
+        <label className="label">Cook time</label>
+        <input
+          type="text"
+          value={form.cook_time}
+          onChange={e => setForm(f => ({ ...f, cook_time: e.target.value }))}
+          className="input-field"
+          placeholder="e.g. 45 minutes"
+        />
       </div>
 
       <div>
         <label className="label">Dietary tags</label>
         <div className="flex flex-wrap gap-2 mt-1">
           {DIETARY_OPTIONS.map(tag => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleDietary(tag)}
+            <button key={tag} type="button" onClick={() => toggleTag('dietary_tags', tag)}
               className={`text-sm px-3 py-1 rounded-full border transition-colors ${
                 form.dietary_tags.includes(tag)
                   ? 'bg-forest text-white border-forest'
                   : 'border-stone-200 text-stone-600 hover:border-forest'
-              }`}
-            >
+              }`}>
               {tag}
             </button>
           ))}

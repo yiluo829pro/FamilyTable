@@ -51,7 +51,7 @@ function AddToWishlistModal({ experience, onClose }: { experience: Experience; o
       story: experience.personal_notes
         ? `Inspired by ${experience.name}. ${experience.personal_notes}`
         : `Inspired by ${experience.name}`,
-      status: 'active',
+      status: 'wishlist',
       created_by: user.id,
       photos: experience.photo_url ? [experience.photo_url] : [],
     })

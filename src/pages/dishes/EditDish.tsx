@@ -40,7 +40,7 @@ export default function EditDish() {
 
     const { error } = await supabase.from('dishes').update({
       name: data.name,
-      cuisine_tag: data.cuisine_tag || null,
+      cuisine_tags: data.cuisine_tags,
       dietary_tags: data.dietary_tags,
       cook_time: data.cook_time || null,
       story: data.story || null,
@@ -81,7 +81,7 @@ export default function EditDish() {
         <DishForm
           initialData={{
             name: dish.name,
-            cuisine_tag: dish.cuisine_tag ?? '',
+            cuisine_tags: dish.cuisine_tags ?? [],
             dietary_tags: dish.dietary_tags,
             cook_time: dish.cook_time ?? '',
             story: dish.story ?? '',

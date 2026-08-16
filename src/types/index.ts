@@ -24,12 +24,13 @@ export interface Dish {
   table_id: number
   name: string
   cuisine_tag: string | null
+  cuisine_tags: string[]
   dietary_tags: string[]
   cook_time: string | null
   story: string | null
   recipe_ingredients: string | null
   recipe_steps: string | null
-  status: 'active' | 'memory_only' | 'archived'
+  status: 'active' | 'memory_only' | 'archived' | 'wishlist'
   photos: string[]
   created_by: string
   created_at: string
