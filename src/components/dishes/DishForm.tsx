@@ -19,10 +19,12 @@ export interface DishFormData {
   status: 'active' | 'memory_only' | 'archived'
   photoFiles: File[]
   coverIndex: number
+  existingPhotos: string[]
+  existingCoverIndex: number
 }
 
 interface Props {
-  initialData?: Partial<DishFormData>
+  initialData?: Partial<DishFormData> & { existingPhotos?: string[] }
   onSubmit: (data: DishFormData) => Promise<void>
   submitLabel?: string
 }
@@ -39,6 +41,8 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
     status: initialData?.status ?? 'active',
     photoFiles: [],
     coverIndex: 0,
+    existingPhotos: initialData?.existingPhotos ?? [],
+    existingCoverIndex: 0,
   })
   const [previews, setPreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -112,6 +116,54 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
       {/* Photo upload */}
       <div>
         <label className="label">Photos</label>
+
+        {/* Show existing saved photos when editing */}
+        {form.existingPhotos.length > 0 && (
+          <div className="mb-3 space-y-2">
+            <p className="text-xs text-stone-500">Saved photos — tap to set as cover, or add new photos below.</p>
+            <div className="grid grid-cols-3 gap-2">
+              {form.existingPhotos.map((src, i) => (
+                <div
+                  key={src}
+                  className="relative group cursor-pointer"
+                  onClick={() => setForm(f => ({ ...f, existingCoverIndex: i, photoFiles: [], coverIndex: 0 }))}
+                >
+                  <img
+                    src={src}
+                    alt={`Saved photo ${i + 1}`}
+                    className={`w-full h-24 object-cover rounded-lg border-2 transition-all ${
+                      form.existingCoverIndex === i && previews.length === 0
+                        ? 'border-forest ring-2 ring-forest/30'
+                        : 'border-transparent opacity-80 hover:opacity-100'
+                    }`}
+                  />
+                  {form.existingCoverIndex === i && previews.length === 0 && (
+                    <span className="absolute top-1 left-1 bg-forest text-white text-xs px-1.5 py-0.5 rounded-full leading-none">
+                      Cover
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      const newPhotos = form.existingPhotos.filter((_, j) => j !== i)
+                      const newCover = form.existingCoverIndex >= newPhotos.length
+                        ? Math.max(0, newPhotos.length - 1)
+                        : form.existingCoverIndex > i
+                          ? form.existingCoverIndex - 1
+                          : form.existingCoverIndex
+                      setForm(f => ({ ...f, existingPhotos: newPhotos, existingCoverIndex: newCover }))
+                    }}
+                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
