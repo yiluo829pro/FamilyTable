@@ -182,8 +182,8 @@ export default function PhotoCropPicker({ file, onConfirm, onCancel }: Props) {
         <p className="text-stone-400 text-xs text-center mt-2 mb-5">Drag to reposition</p>
 
         <div className="flex gap-3">
-          <button onClick={onCancel} className="btn-outline flex-1">Cancel</button>
-          <button onClick={handleConfirm} disabled={!loaded} className="btn-primary flex-1 disabled:opacity-40">
+          <button type="button" onClick={onCancel} className="btn-outline flex-1">Cancel</button>
+          <button type="button" onClick={handleConfirm} disabled={!loaded} className="btn-primary flex-1 disabled:opacity-40">
             Use this crop
           </button>
         </div>
