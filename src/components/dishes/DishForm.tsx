@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import PhotoCropPicker from '../ui/PhotoCropPicker'
 
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal', 'Kosher', 'Keto', 'Paleo']
 const CUISINE_OPTIONS = ['Italian', 'Chinese', 'Mexican', 'Indian', 'Japanese', 'Thai', 'American', 'French', 'Mediterranean', 'Korean', 'Vietnamese', 'Greek', 'Other']
@@ -47,6 +48,8 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
   const [previews, setPreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cropFile, setCropFile] = useState<File | null>(null)
+  const [cropTargetIndex, setCropTargetIndex] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const toggleDietary = (tag: string) => {
@@ -61,13 +64,28 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
-
-    // Revoke old preview URLs to avoid memory leaks
     previews.forEach(url => URL.revokeObjectURL(url))
-
-    const newPreviews = files.map(f => URL.createObjectURL(f))
+    // Merge with existing files if input was triggered by the + button
+    const merged = [...form.photoFiles, ...files]
+    const newPreviews = merged.map(f => URL.createObjectURL(f))
     setPreviews(newPreviews)
-    setForm(f => ({ ...f, photoFiles: files, coverIndex: 0 }))
+    setForm(f => ({ ...f, photoFiles: merged, coverIndex: 0 }))
+    // Open cropper for the first new file (cover)
+    setCropTargetIndex(0)
+    setCropFile(merged[0])
+    // Reset input so same file can be re-selected
+    e.target.value = ''
+  }
+
+  const handleCropConfirm = (croppedFile: File) => {
+    const newFiles = [...form.photoFiles]
+    newFiles[cropTargetIndex] = croppedFile
+    URL.revokeObjectURL(previews[cropTargetIndex])
+    const newPreviews = [...previews]
+    newPreviews[cropTargetIndex] = URL.createObjectURL(croppedFile)
+    setPreviews(newPreviews)
+    setForm(f => ({ ...f, photoFiles: newFiles }))
+    setCropFile(null)
   }
 
   const removePhoto = (index: number) => {
@@ -206,6 +224,14 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
                       Cover
                     </span>
                   )}
+                  {/* Adjust crop button */}
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); setCropTargetIndex(i); setCropFile(form.photoFiles[i]) }}
+                    className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                  >
+                    ✂ crop
+                  </button>
                   <button
                     type="button"
                     onClick={e => { e.stopPropagation(); removePhoto(i) }}
@@ -319,6 +345,14 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
       <button type="submit" disabled={loading} className="btn-primary w-full">
         {loading ? 'Saving…' : submitLabel}
       </button>
+
+      {cropFile && (
+        <PhotoCropPicker
+          file={cropFile}
+          onConfirm={handleCropConfirm}
+          onCancel={() => setCropFile(null)}
+        />
+      )}
     </form>
   )
 }
