@@ -72,6 +72,7 @@ export interface Database {
           table_id: number
           name: string
           cuisine_tag: string | null
+          cuisine_tags: string[]
           dietary_tags: string[]
           cook_time: string | null
           story: string | null
@@ -88,6 +89,7 @@ export interface Database {
           table_id: number
           name: string
           cuisine_tag?: string | null
+          cuisine_tags?: string[]
           dietary_tags?: string[]
           cook_time?: string | null
           story?: string | null
@@ -104,6 +106,7 @@ export interface Database {
           table_id?: number
           name?: string
           cuisine_tag?: string | null
+          cuisine_tags?: string[]
           dietary_tags?: string[]
           cook_time?: string | null
           story?: string | null

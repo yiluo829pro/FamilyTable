@@ -275,7 +275,13 @@ export default function TableDetail() {
                         <Link to={`/tables/${id}/dishes/${dish.id}/edit`} className="text-xs text-forest hover:underline">Edit</Link>
                       </div>
                     </div>
-                    {dish.cuisine_tag && <p className="text-stone-400 text-xs mt-0.5">{dish.cuisine_tag}</p>}
+                    {dish.cuisine_tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {dish.cuisine_tags.slice(0, 3).map(t => (
+                          <span key={t} className="text-xs text-stone-400">{t}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

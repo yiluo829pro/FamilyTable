@@ -20,6 +20,21 @@ export const NOODLE_BRANDS = ['Nissin', 'Nongshim', 'Samyang', 'Indomie', 'Myojo
 
 export const CUISINES = ['Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indian', 'Middle Eastern', 'Italian', 'French', 'Spanish', 'American', 'Mexican', 'Mediterranean', 'Fusion', 'Other']
 
+export const CUISINE_ORIGIN_TAGS = [
+  'Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Filipino', 'Indonesian', 'Singaporean',
+  'Indian', 'Sri Lankan', 'Pakistani', 'Middle Eastern', 'Lebanese', 'Turkish', 'Persian',
+  'Italian', 'French', 'Spanish', 'Greek', 'Mediterranean',
+  'American', 'Southern', 'BBQ', 'Mexican', 'Peruvian', 'Brazilian',
+  'Fusion', 'Other',
+]
+
+export const CUISINE_INGREDIENT_TAGS = [
+  'Beef', 'Chicken', 'Pork', 'Lamb', 'Duck', 'Fish', 'Shrimp', 'Seafood', 'Crab', 'Lobster',
+  'Tofu', 'Egg', 'Cheese', 'Pasta', 'Rice', 'Noodles', 'Bread', 'Dumpling',
+  'Salad', 'Soup', 'Stew', 'Stir-fry', 'Roast', 'Grill', 'Fried',
+  'Vegetable', 'Mushroom', 'Potato',
+]
+
 export const WINE_REGIONS = ['Napa Valley', 'Sonoma', 'Burgundy', 'Bordeaux', 'Champagne', 'Rhône', 'Alsace', 'Provence', 'Tuscany', 'Piedmont', 'Rioja', 'Marlborough', 'Barossa Valley', 'Mendoza', 'Douro', 'Mosel', 'Priorat', 'Ribera del Duero']
 
 export const COFFEE_ORIGINS = ['Ethiopia', 'Colombia', 'Guatemala', 'Brazil', 'Kenya', 'Honduras', 'Costa Rica', 'Panama', 'Peru', 'Yemen', 'Rwanda', 'Indonesia', 'Vietnam', 'India', 'Jamaica']
