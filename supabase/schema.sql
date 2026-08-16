@@ -294,15 +294,13 @@ ALTER TABLE public.collection_items ENABLE ROW LEVEL SECURITY;
 -- (all tables exist now, so cross-table references are safe)
 -- ============================================================
 
--- tables
+-- tables (creator-only to avoid cross-table RLS recursion)
 CREATE POLICY "tables_select" ON public.tables FOR SELECT USING (
-  auth.uid() = created_by OR
-  EXISTS (SELECT 1 FROM public.table_members WHERE table_id = tables.id AND user_id = auth.uid())
+  auth.uid() = created_by
 );
 CREATE POLICY "tables_insert" ON public.tables FOR INSERT WITH CHECK (auth.uid() = created_by);
 CREATE POLICY "tables_update" ON public.tables FOR UPDATE USING (
-  auth.uid() = created_by OR
-  EXISTS (SELECT 1 FROM public.table_members WHERE table_id = tables.id AND user_id = auth.uid() AND role = 'admin')
+  auth.uid() = created_by
 );
 CREATE POLICY "tables_delete" ON public.tables FOR DELETE USING (auth.uid() = created_by);
 
