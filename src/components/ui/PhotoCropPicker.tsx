@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Card preview aspect ratio (matches h-36 card image area, roughly 3:2)
-const CROP_RATIO = 3 / 2
+// Matches card image area: h-52 in a 3-col grid ≈ 16:9
+const CROP_RATIO = 16 / 9
 
 interface Props {
   file: File

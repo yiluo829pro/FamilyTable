@@ -114,6 +114,7 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
   const [error, setError] = useState('')
   const [photoUploading, setPhotoUploading] = useState(false)
   const [cropFile, setCropFile] = useState<File | null>(null)
+  const [localPreview, setLocalPreview] = useState<string>('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const set = <K extends keyof ExperienceFormData>(k: K, v: ExperienceFormData[K]) =>
@@ -128,6 +129,10 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
 
   const handleCropConfirm = async (croppedFile: File) => {
     setCropFile(null)
+    // Show local preview immediately so user sees the crop right away
+    if (localPreview) URL.revokeObjectURL(localPreview)
+    const preview = URL.createObjectURL(croppedFile)
+    setLocalPreview(preview)
     setPhotoUploading(true)
     try {
       const url = await uploadPhoto(croppedFile)
@@ -175,13 +180,24 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
       {/* Photo */}
       <div>
         <label className="label">Photo</label>
-        {form.photo_url && (
-          <img src={form.photo_url} alt="preview" className="w-full h-48 object-cover rounded-xl mb-2" />
+        {(localPreview || form.photo_url) && (
+          <div className="relative w-full mb-2" style={{ aspectRatio: '16/9' }}>
+            <img
+              src={localPreview || form.photo_url}
+              alt="preview"
+              className="w-full h-full object-cover rounded-xl"
+            />
+            {photoUploading && (
+              <div className="absolute inset-0 bg-black/30 rounded-xl flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+              </div>
+            )}
+          </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
         <button type="button" onClick={() => fileRef.current?.click()} disabled={photoUploading}
           className="btn-outline text-sm w-full">
-          {photoUploading ? 'Uploading…' : form.photo_url ? 'Change photo' : 'Upload photo'}
+          {(localPreview || form.photo_url) ? 'Change photo' : 'Upload photo'}
         </button>
       </div>
 
