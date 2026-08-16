@@ -306,18 +306,17 @@ CREATE POLICY "tables_update" ON public.tables FOR UPDATE USING (
 );
 CREATE POLICY "tables_delete" ON public.tables FOR DELETE USING (auth.uid() = created_by);
 
--- table_members
+-- table_members (no self-reference to avoid infinite recursion)
 CREATE POLICY "members_select" ON public.table_members FOR SELECT USING (
   user_id = auth.uid() OR
-  EXISTS (SELECT 1 FROM public.table_members tm2 WHERE tm2.table_id = table_members.table_id AND tm2.user_id = auth.uid())
+  EXISTS (SELECT 1 FROM public.tables WHERE id = table_members.table_id AND created_by = auth.uid())
 );
 CREATE POLICY "members_insert" ON public.table_members FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.tables WHERE id = table_members.table_id AND created_by = auth.uid()) OR
-  EXISTS (SELECT 1 FROM public.table_members WHERE table_id = table_members.table_id AND user_id = auth.uid() AND role = 'admin')
+  EXISTS (SELECT 1 FROM public.tables WHERE id = table_members.table_id AND created_by = auth.uid())
 );
 CREATE POLICY "members_update" ON public.table_members FOR UPDATE USING (
   user_id = auth.uid() OR
-  EXISTS (SELECT 1 FROM public.table_members tm2 WHERE tm2.table_id = table_members.table_id AND tm2.user_id = auth.uid() AND tm2.role = 'admin')
+  EXISTS (SELECT 1 FROM public.tables WHERE id = table_members.table_id AND created_by = auth.uid())
 );
 
 -- dishes
