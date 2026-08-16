@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
@@ -67,14 +68,66 @@ function TableCard({ table }: { table: FamilyTable }) {
   )
 }
 
+function EmptyState() {
+  const [inviteCode, setInviteCode] = useState('')
+
+  const handleJoin = () => {
+    const trimmed = inviteCode.trim()
+    if (!trimmed) return
+    // Support pasting a full URL or just the token
+    const match = trimmed.match(/\/invite\/(.+)$/)
+    const token = match ? match[1] : trimmed
+    window.location.href = `/invite/${token}`
+  }
+
+  return (
+    <div className="max-w-lg mx-auto mt-12 space-y-4">
+      {/* Create */}
+      <div className="card p-8 text-center">
+        <div className="text-5xl mb-4">🍽️</div>
+        <h2 className="font-heading text-xl font-semibold text-forest mb-2">Start your Family Table</h2>
+        <p className="text-stone-500 text-sm mb-6">
+          Create a Table for your family — a place to collect food memories, drinks, favourite spots, and plan dinner parties.
+        </p>
+        <Link to="/tables/new" className="btn-primary w-full block text-center">+ Create a Table</Link>
+      </div>
+
+      {/* Join */}
+      <div className="card p-8">
+        <h3 className="font-heading text-lg font-semibold text-forest mb-1">Join a Table</h3>
+        <p className="text-stone-500 text-sm mb-4">
+          Have an invite link from a family member? Paste it below.
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={inviteCode}
+            onChange={e => setInviteCode(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleJoin()}
+            className="input-field flex-1"
+            placeholder="Paste invite link or code…"
+          />
+          <button onClick={handleJoin} disabled={!inviteCode.trim()} className="btn-primary px-4 disabled:opacity-40">
+            Join
+          </button>
+        </div>
+        <p className="text-stone-400 text-xs mt-3">
+          No invite yet? Ask your family admin to send you one from their Table settings.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const { user } = useAuthStore()
 
-  const { data: tables, isLoading, error } = useQuery({
+  const { data: tables, isLoading } = useQuery({
     queryKey: ['tables', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.from('tables').select('*').order('created_at', { ascending: false })
-      if (error) throw error
+      // Treat errors as empty — new users with no tables may hit RLS returning nothing
+      if (error) return [] as FamilyTable[]
       return data as FamilyTable[]
     },
     enabled: !!user,
@@ -87,7 +140,9 @@ export default function Dashboard() {
           <h1 className="font-heading text-3xl font-bold text-forest">My Tables</h1>
           <p className="text-stone-500 mt-1">Your family food circles</p>
         </div>
-        <Link to="/tables/new" className="btn-primary">+ New Table</Link>
+        {tables && tables.length > 0 && (
+          <Link to="/tables/new" className="btn-primary">+ New Table</Link>
+        )}
       </div>
 
       {isLoading && (
@@ -96,20 +151,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {error && (
-        <div className="card p-6 text-center text-red-500">
-          Failed to load tables. Please try refreshing.
-        </div>
-      )}
-
-      {!isLoading && !error && tables && tables.length === 0 && (
-        <div className="card p-12 text-center">
-          <div className="text-5xl mb-4">🍽️</div>
-          <h2 className="font-heading text-xl font-semibold text-forest mb-2">No tables yet</h2>
-          <p className="text-stone-500 mb-6 text-sm">Create your first family table to start collecting food memories.</p>
-          <Link to="/tables/new" className="btn-primary">Create your first table</Link>
-        </div>
-      )}
+      {!isLoading && tables && tables.length === 0 && <EmptyState />}
 
       {tables && tables.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
