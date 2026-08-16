@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.dishes (
   story               TEXT,
   recipe_ingredients  TEXT,
   recipe_steps        TEXT,
-  status              TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'memory_only', 'archived')),
+  status              TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'memory_only', 'archived', 'wishlist')),
   photos              TEXT[] NOT NULL DEFAULT '{}',
   created_by          UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),

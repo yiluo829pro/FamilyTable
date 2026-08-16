@@ -3,8 +3,9 @@ import PhotoCropPicker from '../ui/PhotoCropPicker'
 
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal', 'Kosher', 'Keto', 'Paleo']
 const CUISINE_OPTIONS = ['Italian', 'Chinese', 'Mexican', 'Indian', 'Japanese', 'Thai', 'American', 'French', 'Mediterranean', 'Korean', 'Vietnamese', 'Greek', 'Other']
-const STATUS_OPTIONS: Array<{ value: 'active' | 'memory_only' | 'archived'; label: string }> = [
-  { value: 'active', label: 'Active — can be added to shortlists' },
+const STATUS_OPTIONS: Array<{ value: 'active' | 'memory_only' | 'archived' | 'wishlist'; label: string }> = [
+  { value: 'wishlist', label: 'Wishlisted — want to cook someday' },
+  { value: 'active', label: 'Active — cooking this regularly' },
   { value: 'memory_only', label: 'Memory only — preserved but not for events' },
   { value: 'archived', label: 'Archived — hidden from most views' },
 ]
@@ -17,7 +18,7 @@ export interface DishFormData {
   story: string
   recipe_ingredients: string
   recipe_steps: string
-  status: 'active' | 'memory_only' | 'archived'
+  status: 'active' | 'memory_only' | 'archived' | 'wishlist'
   photoFiles: File[]
   coverIndex: number
   existingPhotos: string[]

@@ -10,7 +10,7 @@ import CollectionCard from '../../components/collections/CollectionCard'
 type SuperTab = 'food' | 'drinks' | 'misc'
 
 const SUB_FILTERS: Record<SuperTab, string[]> = {
-  food: ['All', 'Active', 'Memory', 'Archived'],
+  food: ['All', 'Wishlisted', 'Active', 'Memory', 'Archived'],
   drinks: ['All', 'Coffee', 'Wine', 'Beer', 'Spirits', 'Sake', 'Tea', 'Non-Alc'],
   misc: ['All', 'Snacks', 'Condiments', 'Instant Noodles', 'Baked Goods'],
 }
@@ -105,7 +105,7 @@ export default function TableDetail() {
   const filterDishes = () => {
     let list = dishes ?? []
     if (subFilterMap.food !== 'All') {
-      const map: Record<string, Dish['status']> = { Active: 'active', Memory: 'memory_only', Archived: 'archived' }
+      const map: Record<string, Dish['status']> = { Wishlisted: 'wishlist', Active: 'active', Memory: 'memory_only', Archived: 'archived' }
       list = list.filter(d => d.status === map[subFilterMap.food])
     }
     if (search) list = list.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
@@ -266,10 +266,11 @@ export default function TableDetail() {
                       <h3 className="font-heading text-sm font-semibold text-forest group-hover:text-forest-light leading-tight">{dish.name}</h3>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          dish.status === 'wishlist' ? 'bg-purple-100 text-purple-700' :
                           dish.status === 'active' ? 'bg-green-100 text-green-700' :
                           dish.status === 'memory_only' ? 'bg-amber/20 text-amber-dark' : 'bg-stone-100 text-stone-500'
                         }`}>
-                          {dish.status === 'active' ? 'Active' : dish.status === 'memory_only' ? 'Memory' : 'Archived'}
+                          {dish.status === 'wishlist' ? 'Wishlisted' : dish.status === 'active' ? 'Active' : dish.status === 'memory_only' ? 'Memory' : 'Archived'}
                         </span>
                         <Link to={`/tables/${id}/dishes/${dish.id}/edit`} className="text-xs text-forest hover:underline">Edit</Link>
                       </div>

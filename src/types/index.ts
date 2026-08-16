@@ -29,7 +29,7 @@ export interface Dish {
   story: string | null
   recipe_ingredients: string | null
   recipe_steps: string | null
-  status: 'active' | 'memory_only' | 'archived'
+  status: 'active' | 'memory_only' | 'archived' | 'wishlist'
   photos: string[]
   created_by: string
   created_at: string
