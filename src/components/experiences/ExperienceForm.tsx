@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import type { Experience, TravelMoment } from '../../types'
+import PhotoCropPicker from '../ui/PhotoCropPicker'
 import {
   CUISINES, PRICE_RANGES, OCCASIONS, AMBIANCE_TAGS, CAFE_SPECIALTIES, WOULD_RETURN,
 } from '../../data/seeds'
@@ -112,17 +113,24 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [cropFile, setCropFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const set = <K extends keyof ExperienceFormData>(k: K, v: ExperienceFormData[K]) =>
     setForm(f => ({ ...f, [k]: v }))
 
-  const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    e.target.value = ''
+    setCropFile(file)
+  }
+
+  const handleCropConfirm = async (croppedFile: File) => {
+    setCropFile(null)
     setPhotoUploading(true)
     try {
-      const url = await uploadPhoto(file)
+      const url = await uploadPhoto(croppedFile)
       set('photo_url', url)
     } catch (err) {
       setError('Photo upload failed: ' + (err instanceof Error ? err.message : 'Check that the item-photos bucket exists in Supabase Storage'))
@@ -393,8 +401,16 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
       {error && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-2">{error}</p>}
 
       <button type="submit" disabled={loading || photoUploading} className="btn-primary w-full">
-        {loading ? 'Saving…' : submitLabel}
+        {loading ? 'Saving…' : photoUploading ? 'Uploading photo…' : submitLabel}
       </button>
+
+      {cropFile && (
+        <PhotoCropPicker
+          file={cropFile}
+          onConfirm={handleCropConfirm}
+          onCancel={() => setCropFile(null)}
+        />
+      )}
     </form>
   )
 }

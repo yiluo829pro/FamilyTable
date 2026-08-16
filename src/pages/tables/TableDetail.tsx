@@ -254,34 +254,27 @@ export default function TableDetail() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filterDishes().map(dish => (
                 <div key={dish.id} className="card hover:shadow-md transition-shadow group">
-                  <div className="h-36 bg-gradient-to-br from-amber/10 to-forest/10 flex items-center justify-center rounded-t-2xl overflow-hidden">
+                  <div className="h-52 bg-gradient-to-br from-amber/10 to-forest/10 flex items-center justify-center rounded-t-2xl overflow-hidden">
                     {dish.photos && dish.photos.length > 0 ? (
                       <img src={dish.photos[0]} alt={dish.name} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-4xl">🍲</span>
                     )}
                   </div>
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-heading text-base font-semibold text-forest group-hover:text-forest-light">{dish.name}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        dish.status === 'active' ? 'bg-green-100 text-green-700' :
-                        dish.status === 'memory_only' ? 'bg-amber/20 text-amber-dark' : 'bg-stone-100 text-stone-500'
-                      }`}>
-                        {dish.status === 'active' ? 'Active' : dish.status === 'memory_only' ? 'Memory' : 'Archived'}
-                      </span>
-                    </div>
-                    {dish.cuisine_tag && <p className="text-stone-400 text-xs mt-1">{dish.cuisine_tag}</p>}
-                    {dish.dietary_tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {dish.dietary_tags.slice(0, 3).map(t => (
-                          <span key={t} className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{t}</span>
-                        ))}
+                  <div className="p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-heading text-sm font-semibold text-forest group-hover:text-forest-light leading-tight">{dish.name}</h3>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          dish.status === 'active' ? 'bg-green-100 text-green-700' :
+                          dish.status === 'memory_only' ? 'bg-amber/20 text-amber-dark' : 'bg-stone-100 text-stone-500'
+                        }`}>
+                          {dish.status === 'active' ? 'Active' : dish.status === 'memory_only' ? 'Memory' : 'Archived'}
+                        </span>
+                        <Link to={`/tables/${id}/dishes/${dish.id}/edit`} className="text-xs text-forest hover:underline">Edit</Link>
                       </div>
-                    )}
-                    <div className="mt-3 pt-3 border-t border-stone-50 flex justify-end">
-                      <Link to={`/tables/${id}/dishes/${dish.id}/edit`} className="text-xs text-forest hover:underline">Edit</Link>
                     </div>
+                    {dish.cuisine_tag && <p className="text-stone-400 text-xs mt-0.5">{dish.cuisine_tag}</p>}
                   </div>
                 </div>
               ))}
