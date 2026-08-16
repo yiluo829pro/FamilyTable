@@ -26,6 +26,10 @@ A family food memory and gathering coordination app. Preserve dish libraries acr
 
 
 
+
+
+
+
 **Experiences** — a personal journal for food outside the home kitchen.
 - Restaurant and café visits with address, ambiance tags, dishes tried, and would-return rating.
 - Travel food moments — log what you ate on a trip with per-moment notes.
@@ -33,6 +37,12 @@ A family food memory and gathering coordination app. Preserve dish libraries acr
 - **Add to cooking wishlist** — one tap to push an experience dish into your table as a new dish idea.
 
 <img width="1271" height="992" alt="Screenshot 2026-08-16 at 5 36 55 PM" src="https://github.com/user-attachments/assets/30a023c9-a823-4c64-918b-14ef0aeda5fb" />
+
+<img width="1271" height="1057" alt="Screenshot 2026-08-16 at 5 58 45 PM" src="https://github.com/user-attachments/assets/a7785f73-1a39-4507-9f30-c230e74a34e7" />
+
+
+
+
 
 
 **Photo flow** — upload multiple photos, drag to crop to the exact frame you want, choose a cover. The crop is applied before upload so what you see in the picker is exactly what appears on the card.
