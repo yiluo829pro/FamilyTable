@@ -203,7 +203,7 @@ CREATE TABLE IF NOT EXISTS public.misc_items (
 
 CREATE TABLE IF NOT EXISTS public.experiences (
   id               BIGSERIAL PRIMARY KEY,
-  table_id         BIGINT NOT NULL REFERENCES public.tables(id) ON DELETE CASCADE,
+  table_id         BIGINT REFERENCES public.tables(id) ON DELETE SET NULL,
   name             TEXT NOT NULL,
   sub_category     TEXT NOT NULL CHECK (sub_category IN ('restaurant', 'cafe', 'travel', 'cookbook')),
   photo_url        TEXT,
@@ -437,74 +437,24 @@ CREATE POLICY "misc_items_delete" ON public.misc_items FOR DELETE USING (
   EXISTS (SELECT 1 FROM public.table_members WHERE table_id = misc_items.table_id AND user_id = auth.uid() AND role = 'admin')
 );
 
--- experiences
-CREATE POLICY "experiences_select" ON public.experiences FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.tables WHERE id = experiences.table_id AND created_by = auth.uid()) OR
-  EXISTS (SELECT 1 FROM public.table_members WHERE table_id = experiences.table_id AND user_id = auth.uid())
-);
-CREATE POLICY "experiences_insert" ON public.experiences FOR INSERT WITH CHECK (
-  auth.uid() = added_by AND (
-    EXISTS (SELECT 1 FROM public.tables WHERE id = experiences.table_id AND created_by = auth.uid()) OR
-    EXISTS (SELECT 1 FROM public.table_members WHERE table_id = experiences.table_id AND user_id = auth.uid())
-  )
-);
-CREATE POLICY "experiences_update" ON public.experiences FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM public.tables WHERE id = experiences.table_id AND created_by = auth.uid()) OR
-  EXISTS (SELECT 1 FROM public.table_members WHERE table_id = experiences.table_id AND user_id = auth.uid())
-);
-CREATE POLICY "experiences_delete" ON public.experiences FOR DELETE USING (
-  auth.uid() = added_by OR
-  EXISTS (SELECT 1 FROM public.table_members WHERE table_id = experiences.table_id AND user_id = auth.uid() AND role = 'admin')
-);
+-- experiences (personal journal — owned by added_by, not tied to a table)
+CREATE POLICY "experiences_select" ON public.experiences FOR SELECT USING (auth.uid() = added_by);
+CREATE POLICY "experiences_insert" ON public.experiences FOR INSERT WITH CHECK (auth.uid() = added_by);
+CREATE POLICY "experiences_update" ON public.experiences FOR UPDATE USING (auth.uid() = added_by);
+CREATE POLICY "experiences_delete" ON public.experiences FOR DELETE USING (auth.uid() = added_by);
 
--- travel_moments
+-- travel_moments (owned via experiences.added_by)
 CREATE POLICY "travel_moments_select" ON public.travel_moments FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.tables t ON t.id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
-  ) OR
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.table_members tm ON tm.table_id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
-  )
+  EXISTS (SELECT 1 FROM public.experiences WHERE id = travel_moments.experience_id AND added_by = auth.uid())
 );
 CREATE POLICY "travel_moments_insert" ON public.travel_moments FOR INSERT WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.tables t ON t.id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
-  ) OR
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.table_members tm ON tm.table_id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
-  )
+  EXISTS (SELECT 1 FROM public.experiences WHERE id = travel_moments.experience_id AND added_by = auth.uid())
 );
 CREATE POLICY "travel_moments_update" ON public.travel_moments FOR UPDATE USING (
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.tables t ON t.id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
-  ) OR
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.table_members tm ON tm.table_id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
-  )
+  EXISTS (SELECT 1 FROM public.experiences WHERE id = travel_moments.experience_id AND added_by = auth.uid())
 );
 CREATE POLICY "travel_moments_delete" ON public.travel_moments FOR DELETE USING (
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.tables t ON t.id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND t.created_by = auth.uid()
-  ) OR
-  EXISTS (
-    SELECT 1 FROM public.experiences exp
-    JOIN public.table_members tm ON tm.table_id = exp.table_id
-    WHERE exp.id = travel_moments.experience_id AND tm.user_id = auth.uid()
-  )
+  EXISTS (SELECT 1 FROM public.experiences WHERE id = travel_moments.experience_id AND added_by = auth.uid())
 );
 
 -- collections

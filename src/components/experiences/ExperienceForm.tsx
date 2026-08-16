@@ -124,8 +124,8 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
     try {
       const url = await uploadPhoto(file)
       set('photo_url', url)
-    } catch {
-      setError('Photo upload failed')
+    } catch (err) {
+      setError('Photo upload failed: ' + (err instanceof Error ? err.message : 'Check that the item-photos bucket exists in Supabase Storage'))
     } finally {
       setPhotoUploading(false)
     }

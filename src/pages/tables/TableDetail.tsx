@@ -2,19 +2,17 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import type { FamilyTable, Dish, Event, Drink, MiscItem, Experience, Collection } from '../../types'
+import type { FamilyTable, Dish, Event, Drink, MiscItem, Collection } from '../../types'
 import DrinkCard from '../../components/drinks/DrinkCard'
 import MiscCard from '../../components/misc/MiscCard'
-import ExperienceCard from '../../components/experiences/ExperienceCard'
 import CollectionCard from '../../components/collections/CollectionCard'
 
-type SuperTab = 'food' | 'drinks' | 'misc' | 'experiences'
+type SuperTab = 'food' | 'drinks' | 'misc'
 
 const SUB_FILTERS: Record<SuperTab, string[]> = {
   food: ['All', 'Active', 'Memory', 'Archived'],
   drinks: ['All', 'Coffee', 'Wine', 'Beer', 'Spirits', 'Sake', 'Tea', 'Non-Alc'],
   misc: ['All', 'Snacks', 'Condiments', 'Instant Noodles', 'Baked Goods'],
-  experiences: ['All', 'Restaurant', 'Café', 'Travel', 'Cookbook'],
 }
 
 const STATUS_FILTERS = ['All', 'Tried & Loved', 'Tried', 'Wishlist']
@@ -77,15 +75,6 @@ export default function TableDetail() {
     },
   })
 
-  const { data: experiences } = useQuery({
-    queryKey: ['experiences', id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('experiences').select('*').eq('table_id', Number(id)).order('created_at', { ascending: false })
-      if (error) throw error
-      return data as Experience[]
-    },
-  })
-
   const { data: events } = useQuery({
     queryKey: ['events', id],
     queryFn: async () => {
@@ -105,7 +94,7 @@ export default function TableDetail() {
   })
 
   const subFilterMap: Record<SuperTab, string> = {
-    food: subFilter, drinks: subFilter, misc: subFilter, experiences: subFilter,
+    food: subFilter, drinks: subFilter, misc: subFilter,
   }
 
   const statusMap: Record<string, string> = {
@@ -151,37 +140,22 @@ export default function TableDetail() {
     return list
   }
 
-  const filterExperiences = () => {
-    let list = experiences ?? []
-    const subMap: Record<string, Experience['sub_category']> = {
-      Restaurant: 'restaurant', Café: 'cafe', Travel: 'travel', Cookbook: 'cookbook',
-    }
-    if (subFilter !== 'All') list = list.filter(e => e.sub_category === subMap[subFilter])
-    if (search) list = list.filter(e => e.name.toLowerCase().includes(search.toLowerCase()))
-    if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name))
-    if (sort === 'rating') list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-    return list
-  }
-
   const tabCounts = {
     food: dishes?.length ?? 0,
     drinks: drinks?.length ?? 0,
     misc: miscItems?.length ?? 0,
-    experiences: experiences?.length ?? 0,
   }
 
   const TABS: Array<{ key: SuperTab; label: string }> = [
     { key: 'food', label: `🍽️ Food (${tabCounts.food})` },
     { key: 'drinks', label: `🥂 Drinks (${tabCounts.drinks})` },
     { key: 'misc', label: `🛒 Misc (${tabCounts.misc})` },
-    { key: 'experiences', label: `🗺️ Exp (${tabCounts.experiences})` },
   ]
 
   const newItemPath = {
     food: `/tables/${id}/dishes/new`,
     drinks: `/tables/${id}/drinks/new`,
     misc: `/tables/${id}/misc/new`,
-    experiences: `/tables/${id}/experiences/new`,
   }[activeTab]
 
   if (tableLoading) return (
@@ -243,7 +217,7 @@ export default function TableDetail() {
 
       {/* Status filter + Search + Sort */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        {activeTab !== 'food' && (
+        {(activeTab === 'drinks' || activeTab === 'misc') && (
           <div className="flex gap-2 overflow-x-auto">
             {STATUS_FILTERS.map(f => (
               <button key={f} onClick={() => setStatusFilter(f)}
@@ -345,23 +319,6 @@ export default function TableDetail() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filterMisc().map(item => <MiscCard key={item.id} item={item} tableId={Number(id)} />)}
-            </div>
-          )}
-        </>
-      )}
-
-      {activeTab === 'experiences' && (
-        <>
-          {filterExperiences().length === 0 ? (
-            <div className="card p-10 text-center">
-              <div className="text-4xl mb-3">🗺️</div>
-              <h3 className="font-heading text-lg text-forest mb-2">No experiences yet</h3>
-              <p className="text-stone-500 text-sm mb-5">Log restaurants, cafés, trips, or cookbooks.</p>
-              <Link to={`/tables/${id}/experiences/new`} className="btn-primary text-sm">Add first experience</Link>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filterExperiences().map(exp => <ExperienceCard key={exp.id} experience={exp} tableId={Number(id)} />)}
             </div>
           )}
         </>

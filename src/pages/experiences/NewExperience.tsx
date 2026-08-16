@@ -1,18 +1,17 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
 import ExperienceForm, { type ExperienceFormData } from '../../components/experiences/ExperienceForm'
 
 export default function NewExperience() {
   const navigate = useNavigate()
-  const { id } = useParams<{ id: string }>()
   const { user } = useAuthStore()
 
   const handleSubmit = async (data: ExperienceFormData) => {
-    if (!user || !id) throw new Error('Not authenticated')
+    if (!user) throw new Error('Not authenticated')
     const { data: exp, error } = await supabase.from('experiences').insert({
-      table_id: Number(id),
       added_by: user.id,
+      table_id: null,
       name: data.name,
       sub_category: data.sub_category,
       photo_url: data.photo_url || null,
@@ -60,14 +59,14 @@ export default function NewExperience() {
       }
     }
 
-    navigate(`/tables/${id}`)
+    navigate('/experiences')
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="mb-6">
-        <button onClick={() => navigate(`/tables/${id}`)} className="text-sm text-stone-500 hover:text-forest">
-          ← Back to Table
+        <button onClick={() => navigate('/experiences')} className="text-sm text-stone-500 hover:text-forest">
+          ← Back to Experiences
         </button>
       </div>
       <div className="card p-8">

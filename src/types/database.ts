@@ -567,7 +567,7 @@ export interface Database {
       experiences: {
         Row: {
           id: number
-          table_id: number
+          table_id: number | null
           name: string
           sub_category: 'restaurant' | 'cafe' | 'travel' | 'cookbook'
           photo_url: string | null
@@ -604,7 +604,7 @@ export interface Database {
         }
         Insert: {
           id?: number
-          table_id: number
+          table_id?: number | null
           name: string
           sub_category: 'restaurant' | 'cafe' | 'travel' | 'cookbook'
           photo_url?: string | null
