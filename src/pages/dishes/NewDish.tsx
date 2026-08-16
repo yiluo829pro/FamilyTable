@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
+import { uploadPhoto } from '../../lib/uploadPhoto'
 import DishForm, { type DishFormData } from '../../components/dishes/DishForm'
 
 export default function NewDish() {
@@ -10,6 +11,17 @@ export default function NewDish() {
 
   const handleSubmit = async (data: DishFormData) => {
     if (!user || !id) throw new Error('Not authenticated')
+
+    // Upload photos; cover goes first (index coverIndex), rest follow in order
+    let photoUrls: string[] = []
+    if (data.photoFiles.length > 0) {
+      const ordered = [
+        data.photoFiles[data.coverIndex],
+        ...data.photoFiles.filter((_, i) => i !== data.coverIndex),
+      ]
+      photoUrls = await Promise.all(ordered.map(f => uploadPhoto(f)))
+    }
+
     const { error } = await supabase.from('dishes').insert({
       table_id: Number(id),
       name: data.name,
@@ -21,7 +33,7 @@ export default function NewDish() {
       recipe_steps: data.recipe_steps || null,
       status: data.status,
       created_by: user.id,
-      photos: [],
+      photos: photoUrls,
     })
     if (error) throw error
     navigate(`/tables/${id}`)

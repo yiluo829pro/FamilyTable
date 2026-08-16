@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal', 'Kosher', 'Keto', 'Paleo']
 const CUISINE_OPTIONS = ['Italian', 'Chinese', 'Mexican', 'Indian', 'Japanese', 'Thai', 'American', 'French', 'Mediterranean', 'Korean', 'Vietnamese', 'Greek', 'Other']
@@ -17,6 +17,8 @@ export interface DishFormData {
   recipe_ingredients: string
   recipe_steps: string
   status: 'active' | 'memory_only' | 'archived'
+  photoFiles: File[]
+  coverIndex: number
 }
 
 interface Props {
@@ -35,9 +37,13 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
     recipe_ingredients: initialData?.recipe_ingredients ?? '',
     recipe_steps: initialData?.recipe_steps ?? '',
     status: initialData?.status ?? 'active',
+    photoFiles: [],
+    coverIndex: 0,
   })
+  const [previews, setPreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const toggleDietary = (tag: string) => {
     setForm(f => ({
@@ -46,6 +52,33 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
         ? f.dietary_tags.filter(t => t !== tag)
         : [...f.dietary_tags, tag],
     }))
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+
+    // Revoke old preview URLs to avoid memory leaks
+    previews.forEach(url => URL.revokeObjectURL(url))
+
+    const newPreviews = files.map(f => URL.createObjectURL(f))
+    setPreviews(newPreviews)
+    setForm(f => ({ ...f, photoFiles: files, coverIndex: 0 }))
+  }
+
+  const removePhoto = (index: number) => {
+    URL.revokeObjectURL(previews[index])
+    const newFiles = form.photoFiles.filter((_, i) => i !== index)
+    const newPreviews = previews.filter((_, i) => i !== index)
+    const newCover = form.coverIndex >= newFiles.length
+      ? Math.max(0, newFiles.length - 1)
+      : form.coverIndex === index
+        ? 0
+        : form.coverIndex > index
+          ? form.coverIndex - 1
+          : form.coverIndex
+    setPreviews(newPreviews)
+    setForm(f => ({ ...f, photoFiles: newFiles, coverIndex: newCover }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,6 +107,72 @@ export default function DishForm({ initialData, onSubmit, submitLabel = 'Save Di
           placeholder="e.g. Grandma's Apple Pie"
           maxLength={100}
         />
+      </div>
+
+      {/* Photo upload */}
+      <div>
+        <label className="label">Photos</label>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full border-2 border-dashed border-stone-200 rounded-xl p-6 text-center hover:border-forest transition-colors"
+        >
+          <div className="text-3xl mb-2">📷</div>
+          <p className="text-stone-500 text-sm">Click to add photos</p>
+          <p className="text-stone-400 text-xs mt-1">You can select multiple</p>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        {previews.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-stone-500">Tap a photo to set it as the cover. The cover appears on the dish card.</p>
+            <div className="grid grid-cols-3 gap-2">
+              {previews.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative group cursor-pointer"
+                  onClick={() => setForm(f => ({ ...f, coverIndex: i }))}
+                >
+                  <img
+                    src={src}
+                    alt={`Photo ${i + 1}`}
+                    className={`w-full h-24 object-cover rounded-lg border-2 transition-all ${
+                      form.coverIndex === i
+                        ? 'border-forest ring-2 ring-forest/30'
+                        : 'border-transparent opacity-80 hover:opacity-100'
+                    }`}
+                  />
+                  {form.coverIndex === i && (
+                    <span className="absolute top-1 left-1 bg-forest text-white text-xs px-1.5 py-0.5 rounded-full leading-none">
+                      Cover
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); removePhoto(i) }}
+                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-24 border-2 border-dashed border-stone-200 rounded-lg flex items-center justify-center text-stone-400 hover:border-forest hover:text-forest transition-colors text-2xl"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
