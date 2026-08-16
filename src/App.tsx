@@ -15,6 +15,7 @@ import NewDrink from './pages/drinks/NewDrink'
 import EditDrink from './pages/drinks/EditDrink'
 import NewMisc from './pages/misc/NewMisc'
 import EditMisc from './pages/misc/EditMisc'
+import ExperienceList from './pages/experiences/ExperienceList'
 import NewExperience from './pages/experiences/NewExperience'
 import EditExperience from './pages/experiences/EditExperience'
 import NewCollection from './pages/collections/NewCollection'
@@ -76,8 +77,9 @@ export default function App() {
           <Route path="/tables/:id/drinks/:drinkId/edit" element={<EditDrink />} />
           <Route path="/tables/:id/misc/new" element={<NewMisc />} />
           <Route path="/tables/:id/misc/:miscId/edit" element={<EditMisc />} />
-          <Route path="/tables/:id/experiences/new" element={<NewExperience />} />
-          <Route path="/tables/:id/experiences/:expId/edit" element={<EditExperience />} />
+          <Route path="/experiences" element={<ExperienceList />} />
+          <Route path="/experiences/new" element={<NewExperience />} />
+          <Route path="/experiences/:expId/edit" element={<EditExperience />} />
           <Route path="/tables/:id/collections/new" element={<NewCollection />} />
           <Route path="/tables/:id/collections/:collectionId" element={<CollectionDetail />} />
           <Route path="/events/new" element={<NewEvent />} />

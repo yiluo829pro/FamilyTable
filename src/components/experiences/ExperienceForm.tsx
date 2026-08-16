@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import type { Experience, TravelMoment } from '../../types'
+import PhotoCropPicker from '../ui/PhotoCropPicker'
 import {
   CUISINES, PRICE_RANGES, OCCASIONS, AMBIANCE_TAGS, CAFE_SPECIALTIES, WOULD_RETURN,
 } from '../../data/seeds'
@@ -112,20 +113,32 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [cropFile, setCropFile] = useState<File | null>(null)
+  const [localPreview, setLocalPreview] = useState<string>('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const set = <K extends keyof ExperienceFormData>(k: K, v: ExperienceFormData[K]) =>
     setForm(f => ({ ...f, [k]: v }))
 
-  const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    e.target.value = ''
+    setCropFile(file)
+  }
+
+  const handleCropConfirm = async (croppedFile: File) => {
+    setCropFile(null)
+    // Show local preview immediately so user sees the crop right away
+    if (localPreview) URL.revokeObjectURL(localPreview)
+    const preview = URL.createObjectURL(croppedFile)
+    setLocalPreview(preview)
     setPhotoUploading(true)
     try {
-      const url = await uploadPhoto(file)
+      const url = await uploadPhoto(croppedFile)
       set('photo_url', url)
-    } catch {
-      setError('Photo upload failed')
+    } catch (err) {
+      setError('Photo upload failed: ' + (err instanceof Error ? err.message : 'Check that the item-photos bucket exists in Supabase Storage'))
     } finally {
       setPhotoUploading(false)
     }
@@ -167,13 +180,24 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
       {/* Photo */}
       <div>
         <label className="label">Photo</label>
-        {form.photo_url && (
-          <img src={form.photo_url} alt="preview" className="w-full h-48 object-cover rounded-xl mb-2" />
+        {(localPreview || form.photo_url) && (
+          <div className="relative w-full mb-2" style={{ aspectRatio: '16/9' }}>
+            <img
+              src={localPreview || form.photo_url}
+              alt="preview"
+              className="w-full h-full object-cover rounded-xl"
+            />
+            {photoUploading && (
+              <div className="absolute inset-0 bg-black/30 rounded-xl flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+              </div>
+            )}
+          </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
         <button type="button" onClick={() => fileRef.current?.click()} disabled={photoUploading}
           className="btn-outline text-sm w-full">
-          {photoUploading ? 'Uploading…' : form.photo_url ? 'Change photo' : 'Upload photo'}
+          {(localPreview || form.photo_url) ? 'Change photo' : 'Upload photo'}
         </button>
       </div>
 
@@ -393,8 +417,16 @@ export default function ExperienceForm({ initialData, initialMoments, onSubmit, 
       {error && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-2">{error}</p>}
 
       <button type="submit" disabled={loading || photoUploading} className="btn-primary w-full">
-        {loading ? 'Saving…' : submitLabel}
+        {loading ? 'Saving…' : photoUploading ? 'Uploading photo…' : submitLabel}
       </button>
+
+      {cropFile && (
+        <PhotoCropPicker
+          file={cropFile}
+          onConfirm={handleCropConfirm}
+          onCancel={() => setCropFile(null)}
+        />
+      )}
     </form>
   )
 }

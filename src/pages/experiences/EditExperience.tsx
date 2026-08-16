@@ -6,7 +6,7 @@ import type { Experience, TravelMoment } from '../../types'
 
 export default function EditExperience() {
   const navigate = useNavigate()
-  const { id, expId } = useParams<{ id: string; expId: string }>()
+  const { expId } = useParams<{ expId: string }>()
 
   const { data: experience, isLoading: expLoading } = useQuery({
     queryKey: ['experience', expId],
@@ -62,7 +62,6 @@ export default function EditExperience() {
     }).eq('id', Number(expId))
     if (error) throw error
 
-    // Replace travel moments
     if (data.sub_category === 'travel') {
       await supabase.from('travel_moments').delete().eq('experience_id', Number(expId))
       const newMoments = data.travel_moments.filter(m => m.item_name.trim()).map(m => ({
@@ -77,7 +76,7 @@ export default function EditExperience() {
       }
     }
 
-    navigate(`/tables/${id}`)
+    navigate('/experiences')
   }
 
   if (expLoading) return (
@@ -93,8 +92,8 @@ export default function EditExperience() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="mb-6">
-        <button onClick={() => navigate(`/tables/${id}`)} className="text-sm text-stone-500 hover:text-forest">
-          ← Back to Table
+        <button onClick={() => navigate('/experiences')} className="text-sm text-stone-500 hover:text-forest">
+          ← Back to Experiences
         </button>
       </div>
       <div className="card p-8">

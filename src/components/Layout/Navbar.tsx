@@ -32,14 +32,14 @@ export default function Navbar() {
       supabase.from('dishes').select('id,name,table_id').ilike('name', pattern).limit(5),
       supabase.from('drinks').select('id,name,table_id').ilike('name', pattern).limit(5),
       supabase.from('misc_items').select('id,name,table_id').ilike('name', pattern).limit(5),
-      supabase.from('experiences').select('id,name,table_id').ilike('name', pattern).limit(5),
+      supabase.from('experiences').select('id,name').ilike('name', pattern).limit(5),
     ])
 
     const results: SearchResult[] = [
       ...(dishes.data ?? []).map(d => ({ type: 'dish' as const, id: d.id, name: d.name, table_id: d.table_id })),
       ...(drinks.data ?? []).map(d => ({ type: 'drink' as const, id: d.id, name: d.name, table_id: d.table_id })),
       ...(misc.data ?? []).map(m => ({ type: 'misc' as const, id: m.id, name: m.name, table_id: m.table_id })),
-      ...(experiences.data ?? []).map(e => ({ type: 'experience' as const, id: e.id, name: e.name, table_id: e.table_id })),
+      ...(experiences.data ?? []).map(e => ({ type: 'experience' as const, id: e.id, name: e.name, table_id: 0 })),
     ]
     setSearchResults(results)
     setSearchOpen(true)
@@ -50,7 +50,7 @@ export default function Navbar() {
     if (r.type === 'dish') return `/tables/${r.table_id}/dishes/${r.id}/edit`
     if (r.type === 'drink') return `/tables/${r.table_id}/drinks/${r.id}/edit`
     if (r.type === 'misc') return `/tables/${r.table_id}/misc/${r.id}/edit`
-    return `/tables/${r.table_id}/experiences/${r.id}/edit`
+    return `/experiences/${r.id}/edit`
   }
 
   return (
@@ -103,6 +103,9 @@ export default function Navbar() {
             <>
               <Link to="/dashboard" className="text-sm text-stone-600 hover:text-forest transition-colors font-medium hidden sm:block">
                 My Tables
+              </Link>
+              <Link to="/experiences" className="text-sm text-stone-600 hover:text-forest transition-colors font-medium hidden sm:block">
+                Experiences
               </Link>
               <span className="text-stone-300 hidden sm:block">|</span>
               <span className="text-sm text-stone-500 truncate max-w-[120px] hidden md:block">{user.email}</span>
