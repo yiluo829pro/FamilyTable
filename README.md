@@ -11,13 +11,34 @@ A family food memory and gathering coordination app. Preserve dish libraries acr
 - **Collections** — curated shareable lists from your table (e.g. "Summer BBQ picks").
 - **Events** — dinner party coordination with guest voting, potluck sign-ups, and food fund bidding.
 
+<img width="1259" height="1380" alt="Screenshot 2026-08-16 at 4 40 02 PM" src="https://github.com/user-attachments/assets/e0fc278b-9905-47d6-b05b-ae1b1ca9e23f" />
+
+<img width="1250" height="952" alt="Screenshot 2026-08-16 at 5 33 01 PM" src="https://github.com/user-attachments/assets/5c062c21-ea95-4bcc-9e60-32d2e49c9f58" />
+
+<img width="1259" height="933" alt="Screenshot 2026-08-16 at 4 43 54 PM" src="https://github.com/user-attachments/assets/fe637dcd-28e1-4fda-89b0-33090b26e7c1" />
+
+
+<img width="1259" height="1500" alt="Screenshot 2026-08-16 at 4 44 30 PM" src="https://github.com/user-attachments/assets/fb468b9e-facb-4585-bc54-cae8969e429d" />
+
+<img width="1259" height="1500" alt="Screenshot 2026-08-16 at 4 44 41 PM" src="https://github.com/user-attachments/assets/2eca3e55-b0e0-461a-ad86-3c5ba4ee968b" />
+
+<img width="1110" height="713" alt="Screenshot 2026-08-16 at 4 49 39 PM" src="https://github.com/user-attachments/assets/ee0800b2-6f4d-4c51-853a-1e22e1e2ed0b" />
+
+
+
 **Experiences** — a personal journal for food outside the home kitchen.
 - Restaurant and café visits with address, ambiance tags, dishes tried, and would-return rating.
 - Travel food moments — log what you ate on a trip with per-moment notes.
 - Cookbooks — author, cuisine focus, favourite recipes.
 - **Add to cooking wishlist** — one tap to push an experience dish into your table as a new dish idea.
 
+<img width="1271" height="992" alt="Screenshot 2026-08-16 at 5 36 55 PM" src="https://github.com/user-attachments/assets/30a023c9-a823-4c64-918b-14ef0aeda5fb" />
+
+
 **Photo flow** — upload multiple photos, drag to crop to the exact frame you want, choose a cover. The crop is applied before upload so what you see in the picker is exactly what appears on the card.
+
+<img width="1271" height="1497" alt="Screenshot 2026-08-16 at 5 34 35 PM" src="https://github.com/user-attachments/assets/5f6918da-d0d0-42f4-b163-fbca82ce8d90" />
+
 
 **Invite co-managers** — share a table with family members via an invite link. Co-managers can add and edit items.
 
