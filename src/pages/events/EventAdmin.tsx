@@ -28,6 +28,19 @@ export default function EventAdmin() {
   const { data: dishes } = useEventDishes(event)
   const { voteCounts } = useRealtimeVotes(event?.id ?? null)
 
+  const { data: guestVotes } = useQuery({
+    queryKey: ['guest-votes', event?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('guest_votes')
+        .select('guest_name')
+        .eq('event_id', event!.id)
+      if (error) throw error
+      return data as { guest_name: string }[]
+    },
+    enabled: !!event,
+  })
+
   const { data: preferences } = useQuery({
     queryKey: ['preferences', event?.id],
     queryFn: async () => {
@@ -95,7 +108,10 @@ export default function EventAdmin() {
     })
 
   const totalVotes = voteCounts.reduce((s, v) => s + v.count, 0)
-  const uniqueGuests = new Set([...(preferences?.map(p => p.guest_name) ?? [])]).size
+  const uniqueGuests = new Set([
+    ...(preferences?.map(p => p.guest_name) ?? []),
+    ...(guestVotes?.map(v => v.guest_name) ?? []),
+  ]).size
   const allergyCount = preferences?.filter(p => p.allergies.length > 0).length ?? 0
   const potluckClaimed = potluckItems?.filter(p => p.status !== 'open').length ?? 0
   const fundTotal = foodFundBids?.reduce((s, b) => s + b.amount, 0) ?? 0
