@@ -33,36 +33,41 @@ function TableCard({ table }: { table: FamilyTable }) {
     queryFn: () => fetchTableCounts(table.id),
   })
 
+  const total = counts ? counts.food + counts.drinks + counts.misc : 0
+
   return (
-    <Link to={`/tables/${table.id}`} className="card hover:shadow-md transition-shadow group block">
-      <div className="h-32 bg-gradient-to-br from-forest/10 to-amber/10 flex items-center justify-center rounded-t-2xl overflow-hidden">
+    <Link to={`/tables/${table.id}`} className="group block rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+      {/* Cover — tall, photo or gradient, name overlaid */}
+      <div className="relative h-44 overflow-hidden">
         {table.cover_photo_url ? (
-          <img src={table.cover_photo_url} alt={table.name} className="w-full h-full object-cover" />
+          <img src={table.cover_photo_url} alt={table.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
-          <span className="text-5xl">🍽️</span>
-        )}
-      </div>
-      <div className="p-4">
-        <h3 className="font-heading text-lg font-semibold text-forest group-hover:text-forest-light transition-colors">
-          {table.name}
-        </h3>
-        {table.description && (
-          <p className="text-stone-500 text-sm mt-1 line-clamp-2">{table.description}</p>
-        )}
-        {counts && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {counts.food > 0 && <span className="text-xs bg-amber/10 text-amber-dark px-2 py-0.5 rounded-full">🍽️ {counts.food} food</span>}
-            {counts.drinks > 0 && <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">🥂 {counts.drinks} drinks</span>}
-            {counts.misc > 0 && <span className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">🛒 {counts.misc} misc</span>}
-            {counts.experiences > 0 && <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">🗺️ {counts.experiences} exp</span>}
-            {counts.food + counts.drinks + counts.misc + counts.experiences === 0 && (
-              <span className="text-xs text-stone-400">No items yet</span>
-            )}
+          <div className="w-full h-full bg-gradient-to-br from-forest to-forest/60 flex items-center justify-center">
+            <span className="text-6xl opacity-30">🍽️</span>
           </div>
         )}
-        <p className="text-stone-400 text-xs mt-3">
-          Created {new Date(table.created_at).toLocaleDateString()}
-        </p>
+        {/* Dark gradient scrim + name */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h3 className="font-heading text-xl font-bold text-white leading-tight">{table.name}</h3>
+          {table.description && (
+            <p className="text-white/70 text-xs mt-0.5 line-clamp-1">{table.description}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Footer strip */}
+      <div className="bg-white px-4 py-3 flex items-center justify-between">
+        {counts && total > 0 ? (
+          <div className="flex gap-3 text-xs text-stone-500">
+            {counts.food > 0 && <span>🍽️ {counts.food}</span>}
+            {counts.drinks > 0 && <span>🥂 {counts.drinks}</span>}
+            {counts.misc > 0 && <span>🛒 {counts.misc}</span>}
+          </div>
+        ) : (
+          <span className="text-xs text-stone-400">No items yet</span>
+        )}
+        <span className="text-xs text-stone-300">{new Date(table.created_at).toLocaleDateString()}</span>
       </div>
     </Link>
   )
