@@ -33,41 +33,39 @@ function TableCard({ table }: { table: FamilyTable }) {
     queryFn: () => fetchTableCounts(table.id),
   })
 
-  const total = counts ? counts.food + counts.drinks + counts.misc : 0
-
   return (
-    <Link to={`/tables/${table.id}`} className="group block rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-      {/* Cover — tall, photo or gradient, name overlaid */}
-      <div className="relative h-44 overflow-hidden">
+    <Link to={`/tables/${table.id}`} className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-stone-100">
+      {/* Photo — fixed 16:9, never overlaid */}
+      <div className="aspect-video overflow-hidden bg-stone-50">
         {table.cover_photo_url ? (
           <img src={table.cover_photo_url} alt={table.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-forest to-forest/60 flex items-center justify-center">
-            <span className="text-6xl opacity-30">🍽️</span>
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <span className="text-4xl opacity-20">🍽️</span>
+            <span className="text-xs text-stone-300">No cover photo</span>
           </div>
         )}
-        {/* Dark gradient scrim + name */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h3 className="font-heading text-xl font-bold text-white leading-tight">{table.name}</h3>
-          {table.description && (
-            <p className="text-white/70 text-xs mt-0.5 line-clamp-1">{table.description}</p>
-          )}
-        </div>
       </div>
 
-      {/* Footer strip */}
-      <div className="bg-white px-4 py-3 flex items-center justify-between">
-        {counts && total > 0 ? (
-          <div className="flex gap-3 text-xs text-stone-500">
-            {counts.food > 0 && <span>🍽️ {counts.food}</span>}
-            {counts.drinks > 0 && <span>🥂 {counts.drinks}</span>}
-            {counts.misc > 0 && <span>🛒 {counts.misc}</span>}
-          </div>
-        ) : (
-          <span className="text-xs text-stone-400">No items yet</span>
+      {/* Content block — always on white, never on photo */}
+      <div className="px-4 pt-3 pb-4 space-y-2">
+        <h3 className="font-heading text-lg font-semibold text-forest leading-snug group-hover:text-forest/80 transition-colors">
+          {table.name}
+        </h3>
+        {table.description && (
+          <p className="text-stone-400 text-sm line-clamp-1">{table.description}</p>
         )}
-        <span className="text-xs text-stone-300">{new Date(table.created_at).toLocaleDateString()}</span>
+        <div className="flex items-center justify-between pt-1">
+          {counts ? (
+            <div className="flex gap-3 text-xs text-stone-500">
+              {counts.food > 0 && <span className="flex items-center gap-1"><span>🍽️</span>{counts.food} dishes</span>}
+              {counts.drinks > 0 && <span className="flex items-center gap-1"><span>🥂</span>{counts.drinks} drinks</span>}
+              {counts.misc > 0 && <span className="flex items-center gap-1"><span>🛒</span>{counts.misc} misc</span>}
+              {counts.food + counts.drinks + counts.misc === 0 && <span className="text-stone-300">No items yet</span>}
+            </div>
+          ) : <span />}
+          <span className="text-xs text-stone-300">{new Date(table.created_at).toLocaleDateString()}</span>
+        </div>
       </div>
     </Link>
   )
